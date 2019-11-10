@@ -38,6 +38,7 @@ service.add({
 );
 
 service.use('mesh', {
+    port: process.env.PORT || 31313,
     pin: 'cmd:*,role:iam',
     discover: {
         registry: {

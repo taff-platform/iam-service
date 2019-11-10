@@ -18,10 +18,12 @@ spec:
         - name: iam-service
           image: gcr.io/taff-io/platform/iam-service:1.0.0
           env:
-            - name: CONSUL_HOST
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.hostIP
+          - name: MONGO_DB_URI
+            value: mongodb://iam-mongo-0.iam-mongo-service:27017/admin
+          - name: CONSUL_HOST
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
           ports:
             - containerPort: 31313
 ---
