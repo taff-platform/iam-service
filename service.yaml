@@ -1,0 +1,92 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iam-service
+  namespace: service
+spec:
+  selector:
+    matchLabels:
+      app: iam-service
+  replicas: 5
+  template:
+    metadata:
+      labels:
+        app: iam-service
+    spec:
+      containers:
+        - name: iam-service
+          image: gcr.io/taff-io/platform/iam-service:1.0.0
+          env:
+            - name: CONSUL_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          ports:
+            - containerPort: 31313
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1beta1
+metadata:
+  name: fast
+provisioner: kubernetes.io/gce-pd
+parameters:
+  type: pd-ssd
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: iam-service-db
+  namespace: service
+spec:
+  serviceName: "iam-service-db"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        role: iam-service-db
+        environment: prod
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: iam-service-db
+          image: mongo
+          command:
+            - mongod
+            - "--replSet"
+            - rs0
+            - "--bind_ip"
+            - 0.0.0.0
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: iam-service-db-persistent-storage
+              mountPath: /data/db
+        - name: iam-service-db-sidecar
+          image: cvallance/mongo-k8s-sidecar
+          env:
+            - name: MONGO_SIDECAR_POD_LABELS
+              value: "role=iam-service-db,environment=prod"
+  volumeClaimTemplates:
+    - metadata:
+        name: iam-service-db-persistent-storage
+        annotations:
+          volume.beta.kubernetes.io/storage-class: "fast"
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 100Gi
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: default-view
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: service

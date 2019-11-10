@@ -1,0 +1,25 @@
+{
+  "name": "iam-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "dependencies": {
+    "seneca": "^3.17.0",
+    "seneca-balance-client": "^1.1.1",
+    "seneca-basic": "^0.6.0",
+    "seneca-consul-registry": "^0.2.0",
+    "seneca-entity": "^5.2.0",
+    "seneca-mesh": "^1.2.1",
+    "seneca-mongo-store": "^1.4.1",
+    "seneca-transport": "^4.0.1",
+    "seneca-user": "^2.1.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
